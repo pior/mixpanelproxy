@@ -46,7 +46,7 @@ func (p *Proxy) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 	}
 
 	if m.mixpanelForward == false {
-		serveDummyMixpanelResponse(rw, req)
+		serveDummy(rw, req)
 		return
 	}
 
@@ -54,7 +54,7 @@ func (p *Proxy) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 }
 
 // Simulate a success response (handle verbose and redirect)
-func serveDummyMixpanelResponse(rw http.ResponseWriter, req *http.Request) {
+func serveDummy(rw http.ResponseWriter, req *http.Request) {
 	err := req.ParseForm()
 	if err != nil {
 		log.Errorf("%v", err)
@@ -64,7 +64,7 @@ func serveDummyMixpanelResponse(rw http.ResponseWriter, req *http.Request) {
 
 	redirect := req.Form.Get("redirect")
 	if redirect != "" {
-		rw.WriteHeader(302)
+		rw.WriteHeader(http.StatusFound)
 		rw.Header().Set("Location", redirect)
 		rw.Header().Set("Cache-Control", "no-cache, no-store")
 		return
