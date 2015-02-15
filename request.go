@@ -24,10 +24,8 @@ type PeoplePayload struct {
 }
 
 type MixpanelRequest struct {
-	req *http.Request
-
-	mixpanelForward  bool
-	payloadAvailable bool
+	req     *http.Request
+	forward bool
 
 	Token      string
 	DistinctId string
@@ -39,8 +37,7 @@ func (m MixpanelRequest) String() string {
 
 func newMixpanelRequest(req *http.Request) (m MixpanelRequest, err error) {
 	m.req = req
-	m.mixpanelForward = true // forward by default
-	m.payloadAvailable = false
+	m.forward = true // forward by default
 
 	var data []byte
 
@@ -80,7 +77,6 @@ func newMixpanelRequest(req *http.Request) (m MixpanelRequest, err error) {
 		return
 	}
 
-	m.payloadAvailable = true
 	log.Debugf("Parsed: %s", m)
 	return
 }

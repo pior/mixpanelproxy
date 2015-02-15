@@ -45,12 +45,11 @@ func (p *Proxy) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 		}
 	}
 
-	if m.mixpanelForward == false {
+	if m.forward {
+		p.reverseProxy.ServeHTTP(rw, req)
+	} else {
 		serveDummy(rw, req)
-		return
 	}
-
-	p.reverseProxy.ServeHTTP(rw, req)
 }
 
 // Simulate a success response (handle verbose and redirect)
