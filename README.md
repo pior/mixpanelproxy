@@ -31,4 +31,4 @@ func main() {
 
 ## Logging
 
-MixpanelProxy use github.com/cenkalti/log for logging
+MixpanelProxy use [github.com/cenkalti/log](https://github.com/cenkalti/log) for logging
