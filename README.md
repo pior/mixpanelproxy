@@ -1,7 +1,18 @@
 # MixpanelProxy
 
-Mixpanel Proxy library in Go
+Mixpanel Proxy library in Go (as a http.Handler)
 
+## Features
+
+- Extract the Token and the DistinctId
+- Support Events and People endpoints
+- Passthrough for other endpoints
+- Custom Director to implement the proxy logic
+- Fully functional dummy (successful) response
+
+## TODO
+
+- Test coverage
 
 ## Usage
 
