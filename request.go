@@ -29,12 +29,12 @@ type MixpanelRequest struct {
 	mixpanelForward  bool
 	payloadAvailable bool
 
-	token      string
-	distinctId string
+	Token      string
+	DistinctId string
 }
 
 func (m MixpanelRequest) String() string {
-	return fmt.Sprintf("MixpanelRequest: distinctId=%")
+	return fmt.Sprintf("MixpanelRequest: token=%s distinctId=%s", m.Token, m.DistinctId)
 }
 
 func newMixpanelRequest(req *http.Request) (m MixpanelRequest, err error) {
@@ -57,8 +57,8 @@ func newMixpanelRequest(req *http.Request) (m MixpanelRequest, err error) {
 			return
 		}
 
-		m.token = p.Properties.Token
-		m.distinctId = p.Properties.DistinctId
+		m.Token = p.Properties.Token
+		m.DistinctId = p.Properties.DistinctId
 
 	case "/engage", "/engage/":
 		data, err = decodeRequest(req)
@@ -72,16 +72,16 @@ func newMixpanelRequest(req *http.Request) (m MixpanelRequest, err error) {
 			return
 		}
 
-		m.token = p.Token
-		m.distinctId = p.DistinctId
+		m.Token = p.Token
+		m.DistinctId = p.DistinctId
 
 	default:
-		log.Debugf("unkown endpoint: %s", req.URL.Path)
+		log.Debugf("Not a Mixpanel endpoint: %s", req.URL.Path)
 		return
 	}
 
 	m.payloadAvailable = true
-	log.Debugf("parsed: token=%s distinct_id=%s", m.token, m.distinctId)
+	log.Debugf("Parsed: %s", m)
 	return
 }
 
@@ -91,11 +91,11 @@ func decodeRequest(req *http.Request) (data []byte, err error) {
 		log.Error("dumpRequestForm: ", err)
 		return
 	}
+
 	data, err = base64.StdEncoding.DecodeString(form.Get("data"))
 	if err != nil {
 		log.Error("base64: ", err)
 	}
 
-	log.Debugf(`data: "%s"`, data)
 	return
 }

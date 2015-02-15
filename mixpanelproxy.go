@@ -7,56 +7,40 @@ import (
 	"net/url"
 )
 
-type Proxy struct {
-	ReverseProxy *httputil.ReverseProxy
+type Director func(*MixpanelRequest) (err error)
 
-	Director func(*MixpanelRequest) (err error)
+type Proxy struct {
+	reverseProxy *httputil.ReverseProxy
+	director     Director
 }
 
-func NewProxy(u *string) *Proxy {
-
-	target, err := url.Parse(*u)
-	if err != nil {
-		log.Fatalf("Invalid host: %v", err)
-	}
-
-	if target.Scheme == "" || target.Host == "" {
-		log.Fatalf("Invalid host: %v", target)
-	}
-
-	log.Infof("Proxying to %s://%s\n", target.Scheme, target.Host)
-
-	httpdirector := func(req *http.Request) {
+func NewProxy(target *url.URL, director Director) *Proxy {
+	httpDirector := func(req *http.Request) {
 		req.URL.Scheme = target.Scheme
 		req.URL.Host = target.Host
 		req.Host = target.Host
 	}
-	httpproxy := &httputil.ReverseProxy{Director: httpdirector}
-
-	director := func(mr *MixpanelRequest) (err error) {
-		log.Infof("Director: %+v", mr)
-		return nil
-	}
+	httpproxy := &httputil.ReverseProxy{Director: httpDirector}
 
 	return &Proxy{
-		ReverseProxy: httpproxy,
-		Director:     director,
+		reverseProxy: httpproxy,
+		director:     director,
 	}
 }
 
 func (p *Proxy) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 	m, err := newMixpanelRequest(req)
 	if err != nil {
-		log.Errorf("Can't parse request: %s %v", req)
-		p.ReverseProxy.ServeHTTP(rw, req)
+		log.Errorf("Decoding failed: %+v", req)
+		p.reverseProxy.ServeHTTP(rw, req)
 		return
 	}
 
-	if p.Director != nil {
-		err = p.Director(&m)
+	if p.director != nil {
+		err = p.director(&m)
 		if err != nil {
 			log.Errorf("director: %v", req)
-			p.ReverseProxy.ServeHTTP(rw, req)
+			p.reverseProxy.ServeHTTP(rw, req)
 			return
 		}
 	}
@@ -66,7 +50,7 @@ func (p *Proxy) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	p.ReverseProxy.ServeHTTP(rw, req)
+	p.reverseProxy.ServeHTTP(rw, req)
 }
 
 // Simulate a success response (handle verbose and redirect)
