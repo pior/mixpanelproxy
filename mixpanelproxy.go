@@ -51,29 +51,3 @@ func (p *Proxy) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 		serveDummy(rw, req)
 	}
 }
-
-// Simulate a success response (handle verbose and redirect)
-func serveDummy(rw http.ResponseWriter, req *http.Request) {
-	err := req.ParseForm()
-	if err != nil {
-		log.Errorf("%v", err)
-		rw.WriteHeader(http.StatusInternalServerError)
-		return
-	}
-
-	redirect := req.Form.Get("redirect")
-	if redirect != "" {
-		rw.WriteHeader(http.StatusFound)
-		rw.Header().Set("Location", redirect)
-		rw.Header().Set("Cache-Control", "no-cache, no-store")
-		return
-	}
-
-	verbose := req.Form.Get("verbose")
-	if verbose == "1" {
-		rw.Header().Set("Content-Type", "application/json")
-		rw.Write([]byte(`{"error": "", "status": 1}`))
-	} else {
-		rw.Write([]byte("1"))
-	}
-}
